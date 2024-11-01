@@ -2,6 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 3000; // Use dynamic port for Vercel
+const cors = require('cors');
+app.use(cors());
+
 
 // Middleware to parse form data
 app.use(bodyParser.urlencoded({ extended: true }));
