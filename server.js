@@ -1,28 +1,22 @@
-// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Use dynamic port for Vercel
 
 // Middleware to parse form data
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Serve your HTML file (for testing locally)
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
-
 // Route to handle form submission
 app.post('/submit-form', (req, res) => {
     const { name, email, phone, package, message } = req.body;
 
-    // Simple form validation (can be expanded as needed)
+    // Simple form validation
     if (!name || !email) {
         return res.status(400).send('Name and email are required.');
     }
 
-    // Handle the data (e.g., save it to a database or send an email)
+    // Handle the data (e.g., log it, save it to a database, send an email)
     console.log('Form Submission:', { name, email, phone, package, message });
 
     // Send a response back to the client
@@ -31,5 +25,5 @@ app.post('/submit-form', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 });
