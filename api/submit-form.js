@@ -1,26 +1,30 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
-const app = express();
-app.use(cors());
+// Enable CORS for this function
+const handler = (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
 
-// Middleware to parse form data
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// Route to handle form submission
-app.post('/submit-form', (req, res) => {
-    const { name, email, phone, package, message } = req.body;
-
-    if (!name || !email) {
-        return res.status(400).send('Name and email are required.');
+    if (req.method === 'OPTIONS') {
+        res.setHeader('Access-Control-Allow-Methods', 'POST');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        return res.status(200).end(); // CORS preflight response
     }
 
-    console.log('Form Submission:', { name, email, phone, package, message });
+    if (req.method === 'POST') {
+        const { name, email, phone, package, message } = req.body;
 
-    res.send('Thank you for your submission!');
-});
+        if (!name || !email) {
+            return res.status(400).json({ error: 'Name and email are required.' });
+        }
 
-// Export the handler
-module.exports = app;
+        console.log('Form Submission:', { name, email, phone, package, message });
+
+        return res.status(200).json({ message: 'Thank you for your submission!' });
+    } else {
+        res.setHeader('Allow', ['POST']);
+        return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+    }
+};
+
+module.exports = handler;
