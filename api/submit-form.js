@@ -15,17 +15,12 @@ app.post('/api/submit-form', async (req, res) => {
         return res.status(400).send('Name and email are required.');
     }
 
-    // Configure the Nodemailer transport with Outlook's SMTP settings
+    // Configure the Nodemailer transport for Gmail
     const transporter = nodemailer.createTransport({
-        host: 'smtp-mail.outlook.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
+        service: 'gmail',
         auth: {
-            user: process.env.EMAIL_USER, // Your Outlook email from .env
-            pass: process.env.EMAIL_PASS  // Your Outlook password from .env
-        },
-        tls: {
-            ciphers: 'SSLv3'
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
         }
     });
 
