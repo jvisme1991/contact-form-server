@@ -1,30 +1,54 @@
+require('dotenv').config(); // Load environment variables from .env file
+const express = require('express');
+const nodemailer = require('nodemailer');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 
-// Enable CORS for this function
-const handler = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    if (req.method === 'OPTIONS') {
-        res.setHeader('Access-Control-Allow-Methods', 'POST');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        return res.status(200).end(); // CORS preflight response
+app.post('/api/submit-form', async (req, res) => {
+    const { name, email, phone, package, message } = req.body;
+
+    if (!name || !email) {
+        return res.status(400).send('Name and email are required.');
     }
 
-    if (req.method === 'POST') {
-        const { name, email, phone, package, message } = req.body;
-
-        if (!name || !email) {
-            return res.status(400).json({ error: 'Name and email are required.' });
+    // Configure the Nodemailer transport with Outlook's SMTP settings
+    const transporter = nodemailer.createTransport({
+        host: 'smtp-mail.outlook.com',
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: process.env.EMAIL_USER, // Your Outlook email from .env
+            pass: process.env.EMAIL_PASS  // Your Outlook password from .env
+        },
+        tls: {
+            ciphers: 'SSLv3'
         }
+    });
 
-        console.log('Form Submission:', { name, email, phone, package, message });
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER, // Send email to yourself or any other destination
+        subject: 'New Service Request',
+        text: `
+            Name: ${name}
+            Email: ${email}
+            Phone: ${phone}
+            Package: ${package}
+            Message: ${message}
+        `
+    };
 
-        return res.status(200).json({ message: 'Thank you for your submission!' });
-    } else {
-        res.setHeader('Allow', ['POST']);
-        return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+    try {
+        await transporter.sendMail(mailOptions);
+        res.send('Thank you for your submission!');
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).send('There was an error processing your request.');
     }
-};
+});
 
-module.exports = handler;
+module.exports = app;
